@@ -1,220 +1,121 @@
-# Conversation Sample Application [![Build Status](https://travis-ci.org/watson-developer-cloud/conversation-simple.svg?branch=master)](http://travis-ci.org/watson-developer-cloud/conversation-simple) [![codecov.io](https://codecov.io/github/watson-developer-cloud/conversation-simple/coverage.svg?branch=master)](https://codecov.io/github/watson-developer-cloud/conversation-simple?branch=master)
+# Cognitive Car Dashboard Application powered by Conversation and NLU
 
-This Node.js app demonstrates the Conversation service in a simple chat interface simulating a cognitive car dashboard.
+This application demonstrates how to integrate [Natural Language Understanding](https://www.ibm.com/watson/developercloud/natural-language-understanding.html) (NLU) service with [Watson Conversation](https://www.ibm.com/watson/developercloud/conversation.html) service to extract generic entities and pass those to the Conversation service.
+This application is an extension of the [Conversation Simple](https://github.com/watson-developer-cloud/conversation-simple) application where it adds integration to another Watson service, namely NLU as well as a third party API, namely [Weather Underground API](https://www.wunderground.com/weather/api/).
 
-![Demo](readme_images/demo.gif)
+For more information about Conversation, see the [detailed documentation](https://www.ibm.com/watson/developercloud/doc/conversation/index.html).
 
-You can view a [demo][demo_url] of this app.
+For more information about NLU, see the [detailed documentation](https://www.ibm.com/watson/developercloud/doc/natural-language-understanding/index.html).
+
+
+<b>To explore this application, you need to have a [Bluemix](https://bluemix.net) account to provision the Watson services.</b>
+
+## How the app works
+The app interface is designed and trained for chatting with a cognitive car. The chat interface is on the left, and the JSON that the JavaScript code receives from the server is on the right. Your questions and commands are run against a small set of sample data trained with intents like these:
+
+    turn_on
+    weather
+    capabilities
+
+These intents help the system to understand variations of questions and commands that you might submit.
+
+Example commands that can be executed by the Conversation service are:
+
+    turn on windshield wipers
+    play music
+
+If you say *"Wipers on"* or *"I want to turn on the windshield wipers"*, the system
+understands that in both cases your intent is the same and responds accordingly.
+
+# Getting Started
 
 ## Before you begin
 
-* Create a Bluemix account
-    * [Sign up](https://console.ng.bluemix.net/registration/?target=/catalog/%3fcategory=watson) in Bluemix, or use an existing account. Your account must have available space for at least 1 app and 1 service.
-* Make sure that you have the following prerequisites installed:
-    * The [Node.js](https://nodejs.org/#download) runtime, including the [npm][npm_link] package manager
-    * The [Cloud Foundry][cloud_foundry] command-line client
+1. Ensure that you have a [Bluemix account](https://console.ng.bluemix.net/registration/). While you can do part of this deployment locally, you must still use Bluemix to provision Watson services.
 
-      Note: Ensure that you Cloud Foundry version is up to date
+2. Download and install [Cloud Foundry CLI](https://github.com/cloudfoundry/cli#downloads)
 
-## Installing locally
+3. Download and install [Node.js](http://nodejs.org/) and [npm](https://www.npmjs.com/).
 
-If you want to modify the app or use it as a basis for building your own app, install it locally. You can then deploy your modified version of the app to the Bluemix cloud.
-
-### Getting the files
-
-Use GitHub to clone the repository locally, or [download the .zip file](https://github.com/watson-developer-cloud/conversation-simple/archive/master.zip) of the repository and extract the files.
-
-### Setting up the Conversation service
-
-You can use an exisiting instance of the Conversation service. Otherwise, follow these steps.
-
-1. At the command line, go to the local project directory (`conversation-simple`).
-
-1. Connect to Bluemix with the Cloud Foundry command-line tool. For more information, see the Watson Developer Cloud [documentation][cf_docs].
-    ```bash
-    cf login
-    ```
-
-1. Create an instance of the Conversation service in Bluemix. For example:
-
-    ```bash
-    cf create-service conversation free my-conversation-service
-    ```
-
-### Importing the Conversation workspace
-
-1. In your browser, navigate to [your Bluemix console] (https://console.ng.bluemix.net/dashboard/services).
-
-1. From the **All Items** tab, click the newly created Conversation service in the **Services** list.
-
-    ![Screen capture of Services list](readme_images/conversation_service.png)
-
-1. On the Service Details page, click **Launch tool**.
-
-1. Click the **Import workspace** icon in the Conversation service tool. Specify the location of the workspace JSON file in your local copy of the app project:
-
-    `<project_root>/training/car_workspace.json`
-
-1. Select **Everything (Intents, Entities, and Dialog)** and then click **Import**. The car dashboard workspace is created.
-
-### Configuring the app environment
-
-1. Copy or rename the `.env.example` file to `.env` (nothing before the dot).
-
-1. Create a service key in the format `cf create-service-key <service_instance> <service_key>`. For example:
-
-    ```bash
-    cf create-service-key my-conversation-service myKey
-    ```
-
-1. Retrieve the credentials from the service key using the command `cf service-key <service_instance> <service_key>`. For example:
-
-    ```bash
-    cf service-key my-conversation-service myKey
-    ```
-
-   The output from this command is a JSON object, as in this example:
-
-    ```JSON
-    {
-      "password": "87iT7aqpvU7l",
-      "url": "https://gateway.watsonplatform.net/conversation/api",
-      "username": "ca2905e6-7b5d-4408-9192-e4d54d83e604"
-    }
-    ```
-
-1. Paste  the `password` and `username` values (without quotation marks) from the JSON into the `CONVERSATION_PASSWORD` and `CONVERSATION_USERNAME` variables in the `.env` file. For example:
-
-    ```
-    CONVERSATION_USERNAME=ca2905e6-7b5d-4408-9192-e4d54d83e604
-    CONVERSATION_PASSWORD=87iT7aqpvU7l
-    ```
-
-1. In your Bluemix console, open the Conversation service instance where you imported the workspace.
-
-1. Click the menu icon in the upper-right corner of the workspace tile, and then select **View details**.
-
-    ![Screen capture of workspace tile menu](readme_images/workspace_details.png)
-
-1. Click the ![Copy](readme_images/copy_icon.png) icon to copy the workspace ID to the clipboard.
-
-1. On the local system, paste the workspace ID into the WORKSPACE_ID variable in the `.env` file. Save and close the file.
-
-### Installing and starting the app
-
-1. Install the demo app package into the local Node.js runtime environment:
-
-    ```bash
-    npm install
-    ```
-
-1. Start the app:
-
-    ```bash
-    npm start
-    ```
-
-1. Point your browser to http://localhost:3000 to try out the app.
-
-## Testing the app
-
-After your app is installed and running, experiment with it to see how it responds.
-
-The chat interface is on the left, and the JSON that the JavaScript code receives from the Conversation service is on the right. Your questions and commands are interpreted using a small set of sample data trained with the following intents:
-
-    turn_on
-    turn_off
-    turn_up
-    turn_down
-    traffic_update
-    locate_amenity
-    weather
-    phone
-    capabilities
-    greetings
-    goodbyes
-
-Type a request, such as `music on` or `I want to turn on the windshield wipers`. The system understands your intent and responds. You can see the details of how your input was understood by examining the JSON data in the `Watson understands` section on the right side.
-
-For example, if you type `Turn on some music`, the JSON data shows that the system understood the `turn_on` intent with a high level of confidence, along with the `appliance` entity with a value of `music`.
-
-For more information about intents, see the [Conversation service documentation][doc_intents].
-
-To see details of how these intents are defined, including sample input for each intent, launch the Conversation tool.
-
-## Modifying the app
-
-After you have the app deployed and running, you can explore the source files and make changes. Try the following:
-
-* Modify the .js files to change the app logic.
-* Modify the .html file to change the appearance of the app page.
-* Use the Conversation tool to train the service for new intents, or to modify the dialog flow. For more information, see the [Conversation service documentation][docs_landing].
-
-## Deploying to Bluemix
-
-You can use Cloud Foundry to deploy your local version of the app to Bluemix.
-
-1. In the project root directory, open the `manifest.yml` file:
-
-  * In the `applications` section of the `manifest.yml` file, change the `name` value to a unique name for your version of the demo app.
-  * In the `services` section, specify the name of the Conversation service instance you created for the demo app. If you do not remember the service name, use the `cf services` command to list all services you have created.
-
-  The following example shows a modified `manifest.yml` file:
-
-  ```yml
-  ---
-  declared-services:
-   conversation-service:
-     label: conversation
-     plan: free
-  applications:
-  - name: conversation-simple-app-test1
-   command: npm start
-   path: .
-   memory: 256M
-   instances: 1
-   services:
-   - my-conversation-service
-   env:
-     NPM_CONFIG_PRODUCTION: false
-  ```
-
-1. Push the app to Bluemix:
-
-  ```bash
-  cf push
-  ```
-  Access your app on Bluemix at the URL specified in the command output.
-
-## Troubleshooting
-
-If you encounter a problem, you can check the logs for more information. To see the logs, run the `cf logs` command:
-
-```none
-cf logs <application-name> --recent
+## Running locally
+Open a terminal on your machine and execute the following commands:
+```sh
+1.  mkdir convapp
+2.  cd convapp
+3.  git clone https://github.com/joe4k/conversation-nlu.git
+4.  cd conversation-nlu
+5.  npm Install  ==> installs node packages defined in package.json
+6.  cp .env.example .env  ==> we define service credentials in .env file
+7.  edit .env file and copy/paste the credentials for NLU, Conversation and Weather services (you will create these next).
 ```
 
-## License
+To create Natural Language Understanding (NLU) and Conversation service credentials, on your terminal window, execute the following:
+```
+1.  cf login   ==>  connects you to your bluemix account
+  - API endpoint: https://api.ng.bluemix.net
+  - username: your_bluemix_username
+  - password:   your_bluemix_password
 
-This sample code is licensed under Apache 2.0.
-Full license text is available in [LICENSE](LICENSE).
+2.  cf create-service conversation free convapp-conv-service
+ ==> create conversation using free plan and call it convapp-conv-service
 
-## Contributing
+3.  cf create-service-key convapp-conv-service svcKey
 
-See [CONTRIBUTING](CONTRIBUTING.md).
+4.  cf service-key convapp-conv-service svcKey
+ ==> returns username and password credentials for conversation service
 
-## Open Source @ IBM
+5.  Copy the Conversation username and password to the .env file
+CONVERSATION_USERNAME=username
+CONVERSATION_PASSWORD=password
 
-Find more open source projects on the
-[IBM Github Page](http://ibm.github.io/).
+6.  cf create-service natural-language-understanding free convapp-nlu-service
+ ==> create NLU service using free plan and call it convapp-nlu-service
 
+7.  cf create-service-key convapp-nlu-service svcKey
 
-[cf_docs]: (https://www.ibm.com/watson/developercloud/doc/common/getting-started-cf.html)
-[cloud_foundry]: https://github.com/cloudfoundry/cli#downloads
-[demo_url]: http://conversation-simple.mybluemix.net/
-[doc_intents]: (http://www.ibm.com/watson/developercloud/doc/conversation/intent_ovw.shtml)
-[docs]: http://www.ibm.com/watson/developercloud/doc/conversation/overview.shtml
-[docs_landing]: (http://www.ibm.com/watson/developercloud/doc/conversation/index.shtml)
-[node_link]: (http://nodejs.org/)
-[npm_link]: (https://www.npmjs.com/)
-[sign_up]: bluemix.net/registration
+8.  cf service-key convapp-nlu-service svcKey
+ ==> returns apikey for NLU service
+
+9.  Copy NLU username and password to the .env file
+NATURAL_LANGUAGE_UNDERSTANDING_USERNAME=username
+NATURAL_LANGUAGE_UNDERSTANDING_PASSWORD =password
+```
+
+To get the weather, we will rely on the [Weather Underground API](https://www.wunderground.com/weather/api/). To use the weather underground api, you need to [sign up for an apikey](https://www.wunderground.com/weather/api/). Once you get the key, edit .env file and copy the weather api key to .env file.
+
+WEATHER_API_KEY=weatherapikey
+
+The last piece of information we need is the WORKSPACE_ID. 
+To get this, we need to create a workspace in our conversation service and build a conversation which involves defining intents, entities and building a dialog to orchestrate the interaction with the user. 
+To do so:
+  * Point your browser to http://bluemix.net
+  * Login with your Bluemix credentials
+  * Find your conversation service with the name convapp-conv-service. Click to open the page for that service.
+  * Find the Launch button and click it to launch the tooling for the conversation service.
+  * Click Import to import a json file which defines the conversation workspace ==> Choose file convapp/conversation-nlu/training/car_workspace_nlu.json
+  * This imports intents, entities, and the dialog  for this conversation into a workspace called NLU_Car_Dashboard.
+  * Click the Actions menu (3 vertical dots in top right of workspace tile) to View details.
+  * Copy Workspace ID, edit .env file and add workspace id
+     WORKSPACE_ID=workspaceID
+
+Now you’re ready to run the application. On the terminal command line, execute this command.
+``` sh
+node server.js
+Point your browser to http://localhost:3000
+Experiment with conversation application
+   Ask things like: “What is the weather in Austin, TX”
+```
+
+To push your application to Bluemix:
+``` sh
+  edit manifest.yml and change name to a unique name (for example, convapp-conv-jk)
+  cf push
+  point your browser to http://convapp-conv-nlu-jk.mybluemix.net
+  Experiment with conversation application
+    Ask things like: “What is the weather in Austin, TX”
+```
+
+# License
+
+  This sample code is licensed under Apache 2.0.
+  Full license text is available in [LICENSE](LICENSE).
